@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import {
   LogIn, LogOut, User, Calendar, Search, Settings,
-  Users, LayoutDashboard, GitMerge, Menu, X, Building2
+  Users, LayoutDashboard, GitMerge, Menu, X, Building2, ChevronDown, ClipboardList
 } from "lucide-react";
 
 type UserProfile = {
@@ -37,11 +37,21 @@ const adminLinks = [
   { href: "/dashboard/admin/settings", label: "Settings", icon: Settings },
 ];
 
+const employeeLinks = [
+  { href: "/dashboard", label: "My Bookings", icon: LayoutDashboard, exact: true },
+];
+
+const branchManagerLinks = [
+  { href: "/dashboard/branch-manager", label: "Approvals", icon: ClipboardList, exact: true },
+];
+
 export default function Navbar() {
   const [authUser, setAuthUser] = useState<{ id: string } | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
   const supabase = createClient();
@@ -67,8 +77,19 @@ export default function Navbar() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Close mobile menu on route change
-  useEffect(() => { setMobileOpen(false); }, [pathname]);
+  // Close mobile menu and dropdown on route change
+  useEffect(() => { setMobileOpen(false); setDropdownOpen(false); }, [pathname]);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -118,28 +139,60 @@ export default function Navbar() {
             </div>
           )}
 
-          {/* Right: user info + actions */}
-          <div className="flex items-center gap-3">
+          {/* Desktop non-admin navigation */}
+          {authUser && profile?.role && profile.role !== "ADMIN" && (
+            <div className="flex items-center gap-0.5">
+              {(profile.role === "BRANCH_MANAGER" ? branchManagerLinks : employeeLinks).map(({ href, label, icon: Icon, exact }) => (
+                <Link key={href} href={href} className={linkCls(href, exact)}>
+                  <Icon className="w-4 h-4" />
+                  {label}
+                </Link>
+              ))}
+            </div>
+          )}
+
+          {/* Right: user dropdown + mobile hamburger */}
+          <div className="flex items-center gap-2">
             {!loadingAuth && authUser && profile ? (
               <>
-                <div className="hidden sm:flex items-center gap-2.5">
-                  <div className="text-right">
-                    <p className="text-sm font-semibold text-white leading-tight">{profile.full_name}</p>
-                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${ROLE_COLOR[profile.role] ?? "bg-gray-200/20 text-gray-200"}`}>
-                      {ROLE_LABEL[profile.role] ?? profile.role}
-                    </span>
-                  </div>
-                  <div className="w-9 h-9 rounded-full bg-secondary/20 border-2 border-secondary/40 flex items-center justify-center flex-shrink-0">
-                    <User className="w-4 h-4 text-secondary" />
-                  </div>
+                {/* User dropdown */}
+                <div className="relative" ref={dropdownRef}>
+                  <button
+                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                    className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white/10 transition-colors focus:outline-none"
+                    aria-label="User menu"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-secondary/20 border-2 border-secondary/40 flex items-center justify-center flex-shrink-0">
+                      <User className="w-4 h-4 text-secondary" />
+                    </div>
+                    <div className="hidden sm:block text-left">
+                      <p className="text-sm font-semibold text-white leading-tight">{profile.full_name}</p>
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${ROLE_COLOR[profile.role] ?? "bg-gray-200/20 text-gray-200"}`}>
+                        {ROLE_LABEL[profile.role] ?? profile.role}
+                      </span>
+                    </div>
+                    <ChevronDown className={`w-3.5 h-3.5 text-slate-400 hidden sm:block transition-transform ${dropdownOpen ? "rotate-180" : ""}`} />
+                  </button>
+
+                  {dropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 z-50 overflow-hidden">
+                      <div className="px-4 py-3 bg-gray-50 border-b border-gray-100">
+                        <p className="text-sm font-semibold text-gray-900 truncate">{profile.full_name}</p>
+                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded mt-0.5 inline-block ${ROLE_COLOR[profile.role] ?? "bg-gray-200/20 text-gray-200"}`}>
+                          {ROLE_LABEL[profile.role] ?? profile.role}
+                        </span>
+                      </div>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-2.5 px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        Sign out
+                      </button>
+                    </div>
+                  )}
                 </div>
-                <button
-                  onClick={handleLogout}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 border border-white/20 text-sm font-medium rounded-lg text-white hover:bg-white/10 focus:outline-none transition-colors"
-                >
-                  <LogOut className="h-4 w-4" />
-                  <span className="hidden sm:inline">Sign out</span>
-                </button>
+
                 {/* Mobile hamburger for admin */}
                 {profile.role === "ADMIN" && (
                   <button

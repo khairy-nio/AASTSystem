@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Loader2, AlertCircle, Calendar, ClipboardList, CheckCircle, XCircle, Clock, ArrowRight } from "lucide-react";
+import { Loader2, AlertCircle, Calendar, ClipboardList, CheckCircle, XCircle, Clock, ArrowRight, User } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { checkBookingConflict, validateBookingLeadTime } from "@/app/actions/bookingActions";
 import WeeklyCalendar from "./WeeklyCalendar";
@@ -20,7 +20,7 @@ interface HistoryBooking {
   start_slot?: { start_time: string } | null;
   end_slot?: { end_time: string } | null;
 }
-interface UserViewProps { role: string; userId: string; canViewAvailability?: boolean; }
+interface UserViewProps { role: string; userId: string; canViewAvailability?: boolean; userName?: string; }
 
 const STATUS_CONFIG: Record<string, { label: string; icon: typeof CheckCircle; cls: string; dotCls: string }> = {
   APPROVED: { label: "Approved", icon: CheckCircle, cls: "bg-green-50 text-green-700 border-green-200", dotCls: "bg-green-500" },
@@ -29,7 +29,7 @@ const STATUS_CONFIG: Record<string, { label: string; icon: typeof CheckCircle; c
   PENDING: { label: "Pending Review", icon: Clock, cls: "bg-amber-50 text-amber-700 border-amber-200", dotCls: "bg-amber-500" },
 };
 
-export default function UserView({ role, userId, canViewAvailability }: UserViewProps) {
+export default function UserView({ role, userId, canViewAvailability, userName }: UserViewProps) {
   const isSecretary = role === "SECRETARY";
 
   const [roomType, setRoomType] = useState<"LECTURE" | "MULTI_PURPOSE">(isSecretary ? "MULTI_PURPOSE" : "LECTURE");
@@ -153,8 +153,28 @@ export default function UserView({ role, userId, canViewAvailability }: UserView
     );
   }
 
+  const roleLabel = role === "SECRETARY" ? "Secretary" : "Employee";
+  const roleDescription = role === "SECRETARY"
+    ? "Submit multi-purpose room bookings · 48 hours advance notice required"
+    : "Submit lecture or multi-purpose room bookings · 24 hours advance notice required";
+
   return (
     <div className="flex flex-col gap-6 w-full">
+      {/* Page header */}
+      <div className="bg-card border border-card-border rounded-2xl p-5 shadow-sm">
+        <div className="flex items-center gap-4">
+          <div className="w-11 h-11 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
+            <User className="w-5 h-5 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-foreground">
+              {userName ? `Welcome, ${userName.split(" ")[0]}` : "My Workspace"}
+            </h1>
+            <p className="text-xs text-muted mt-0.5">{roleLabel} · {roleDescription}</p>
+          </div>
+        </div>
+      </div>
+
       {canViewAvailability && <WeeklyCalendar />}
 
       <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">

@@ -66,7 +66,7 @@ export default async function DashboardPage() {
         {role === 'ADMIN' ? (
           <AdminView />
         ) : role === 'EMPLOYEE' || role === 'SECRETARY' ? (
-          <UserView role={role} userId={user.id} canViewAvailability={canViewAvailability} />
+          <UserView role={role} userId={user.id} canViewAvailability={canViewAvailability} userName={profile.full_name} />
         ) : (
           <div className="bg-card border border-orange-200 p-8 rounded-2xl shadow-sm">
             <h2 className="text-xl font-bold text-orange-600 mb-2">Role Not Configured</h2>
