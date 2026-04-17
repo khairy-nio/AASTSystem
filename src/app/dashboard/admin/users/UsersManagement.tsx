@@ -73,7 +73,7 @@ export default function UsersManagement() {
       setUsers((prev) => prev.map((u) => u.id === userId ? { ...u, can_view_availability: currentValue } : u));
       toast.error("Failed to update user");
     } else {
-      toast.success(`Availability view ${!currentValue ? "enabled" : "disabled"}`);
+      toast.success(`Availability view ${!currentValue ? "enabled." : "disabled."}`);
     }
   };
 

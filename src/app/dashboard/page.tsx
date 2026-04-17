@@ -20,13 +20,11 @@ export default async function DashboardPage() {
 
   if (!profile) {
     return (
-      <div className="flex-1 p-8 bg-gray-50 dark:bg-slate-900/50">
+      <div className="flex-1 p-6 md:p-8 bg-background">
         <div className="max-w-7xl mx-auto">
-          <div className="bg-white dark:bg-slate-800 p-8 rounded-xl shadow-sm border border-orange-200 dark:border-orange-800/30">
-            <h2 className="text-xl font-bold text-orange-600 dark:text-orange-400 mb-2">Profile Not Found</h2>
-            <p className="text-orange-700 dark:text-orange-300">
-              Your user profile could not be found. Please contact the system administrator.
-            </p>
+          <div className="bg-card border border-orange-200 p-8 rounded-2xl shadow-sm">
+            <h2 className="text-xl font-bold text-orange-600 mb-2">Profile Not Found</h2>
+            <p className="text-orange-700">Your user profile could not be found. Please contact the system administrator.</p>
           </div>
         </div>
       </div>
@@ -63,16 +61,16 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="flex-1 p-8 bg-gray-50 dark:bg-slate-900/50">
+    <div className="flex-1 p-6 md:p-8 bg-background">
       <div className="max-w-7xl mx-auto">
         {role === 'ADMIN' ? (
           <AdminView />
         ) : role === 'EMPLOYEE' || role === 'SECRETARY' ? (
           <UserView role={role} userId={user.id} canViewAvailability={canViewAvailability} />
         ) : (
-          <div className="bg-white dark:bg-slate-800 p-8 rounded-xl shadow-sm border border-orange-200 dark:border-orange-800/30">
-            <h2 className="text-xl font-bold text-orange-600 dark:text-orange-400 mb-2">Role Not Configured</h2>
-            <p className="text-orange-700 dark:text-orange-300">
+          <div className="bg-card border border-orange-200 p-8 rounded-2xl shadow-sm">
+            <h2 className="text-xl font-bold text-orange-600 mb-2">Role Not Configured</h2>
+            <p className="text-orange-700">
               Your role ({role ?? 'Unknown'}) does not have a configured view. Contact your administrator.
             </p>
           </div>
