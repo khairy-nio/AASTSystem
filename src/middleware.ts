@@ -38,8 +38,9 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // Optional: Redirect logged in user from /login to /dashboard
-  if (user && request.nextUrl.pathname === '/login') {
+  // Redirect logged in user from /login to /dashboard
+  // BUT allow them to stay on /login?pending=true (unapproved accounts)
+  if (user && request.nextUrl.pathname === '/login' && request.nextUrl.searchParams.get('pending') !== 'true') {
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'
     return NextResponse.redirect(url)

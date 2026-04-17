@@ -6,7 +6,7 @@ export async function proxy(request: NextRequest) {
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         getAll() {
@@ -30,7 +30,9 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  if (user && (pathname === '/login' || pathname === '/register')) {
+  // Allow unapproved users to stay on /login?pending=true
+  const isPending = request.nextUrl.searchParams.get('pending') === 'true'
+  if (user && (pathname === '/login' || pathname === '/register') && !isPending) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
