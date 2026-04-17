@@ -12,7 +12,9 @@
 | mido-io | [@mido-io](https://github.com/mido-io) |
 
 ---
-
+## issue
+1- Refreash the page to make the nav-bar appear
+---
 ## Test Accounts
 
 All accounts use the same password: **Password123!**
